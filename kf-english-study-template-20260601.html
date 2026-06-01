@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>共通ベーステンプレート — English Study Docs</title>
+
+<!--
+  ============================================================
+  共通ベーステンプレート  (Apple / Distinction 路線)
+  ============================================================
+  使い方:
+    1. この :root のトークンと <style> をそのままコピーして起点にする
+    2. <body> 内のコンポーネントを必要な分だけ複製・編集
+    3. 不要なセクションは削除してよい(各ブロックはコメントで区切り済み)
+
+  設計の規律:
+    - 余白を大きく取る / 1セクション=1メッセージ
+    - 色の主役はアクセント(グラデ)1系統。本文・構造はモノクロのまま
+    - 文字組みで見せる(装飾より階層・字間・行間)
+
+  色を変えたいとき → :root の --grad-1 / --grad-2 / --em / --accent だけ触る
+  ============================================================
+-->
+
+<style>
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
+:root{
+  /* --- color (monochrome base) --- */
+  --bg:        #ffffff;
+  --bg-alt:    #f5f5f7;
+  --ink:       #1d1d1f;
+  --ink-2:     #6e6e73;
+  --ink-3:     #86868b;
+  --line:      #d2d2d7;
+
+  /* --- accent (見出し用グラデ + インライン強調 + リンク) --- */
+  --grad-1:    #3730d6;   /* グラデ開始(インディゴ) */
+  --grad-2:    #e640fb;   /* グラデ終了(マゼンタ)   */
+  --accent-grad: linear-gradient(105deg, var(--grad-1) 0%, #7c3aed 42%, var(--grad-2) 100%);
+  --em:        #8b3ff0;   /* 本文中の語句強調       */
+  --accent:    #7c3aed;   /* リンク(ブランド紫)     */
+  --accent-bg: #7c3aed;
+
+  /* --- typography --- */
+  --font-en: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-chart: var(--font-en); /* チャート/SVGの文字。数字は tabular-nums で桁そろえ */
+  --font-jp: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", var(--font-en);
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-ipa: "Charis SIL", "Gentium Plus", "Doulos SIL", "Hiragino Mincho ProN", Georgia, Cambria, "Times New Roman", serif;
+
+  /* --- spacing scale (8pt grid) --- */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px;
+  --s6:32px; --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+
+  /* --- radius --- */
+  --r-sm:8px; --r-md:14px; --r-lg:22px;
+
+  /* --- layout --- */
+  --maxw:780px;
+}
+
+/* ============================================================
+   2. BASE
+   ============================================================ */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-jp);font-size:17px;line-height:1.7;letter-spacing:.01em;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+.en{font-family:var(--font-en)}
+.mono{font-family:var(--font-mono)}
+::selection{background:#8b3ff022}
+
+/* ============================================================
+   3. TYPOGRAPHY
+   ============================================================ */
+h1,h2,h3,h4{font-family:var(--font-jp);font-weight:600;color:var(--ink);margin:0}
+h1{font-size:clamp(34px,6.5vw,60px);line-height:1.12;letter-spacing:-.02em;font-weight:700}
+h2{font-size:clamp(26px,4.4vw,42px);line-height:1.18;letter-spacing:-.015em;font-weight:700}
+h3{font-size:clamp(20px,2.6vw,26px);line-height:1.3;letter-spacing:-.01em}
+p{margin:0 0 var(--s4)}
+.lead{font-size:clamp(18px,2.2vw,21px);line-height:1.6;color:var(--ink-2)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+strong{font-weight:600;color:var(--ink)}
+small{font-size:13px;color:var(--ink-3)}
+
+/* kicker = 小さな英字ラベル(セクションの上)。Distinction同様グレー */
+.kicker{
+  font-family:var(--font-en);font-size:13px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:var(--s3);
+}
+
+/* ★ 見出しグラデーション。class="grad" を付けた見出しだけ色がつく */
+.grad{
+  background:var(--accent-grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:var(--em); /* clip 非対応時のフォールバック */
+}
+/* 本文中のインライン強調 */
+.em{color:var(--em);font-weight:600}
+/* 英語の補足行（バイリンガル表示用。日本語リードの直下に置く） */
+.en-sub{font-family:var(--font-en);color:var(--ink-3);font-size:15.5px;line-height:1.55;margin-top:6px}
+.hero .en-sub{max-width:560px;margin:6px auto 0}
+
+/* ============================================================
+   4. LAYOUT
+   ============================================================ */
+.wrap{max-width:var(--maxw);margin:0 auto;padding-left:var(--s5);padding-right:var(--s5)}
+section{padding-top:var(--s9);padding-bottom:var(--s9)}
+section.alt{background:var(--bg-alt)}
+.divider{height:1px;background:var(--line);border:0;margin:0}
+
+/* ============================================================
+   5. TOP BAR (slim / sticky)
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:50;background:rgba(255,255,255,.8);
+  backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);
+}
+.topbar .row{max-width:var(--maxw);margin:0 auto;padding:var(--s3) var(--s5);
+  display:flex;align-items:center;justify-content:space-between}
+.topbar .brand{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.topbar nav a{font-size:13px;color:var(--ink-2);margin-left:var(--s5)}
+.topbar nav a:hover{color:var(--ink);text-decoration:none}
+
+/* ============================================================
+   6. HERO
+   ============================================================ */
+.hero{padding-top:var(--s10);padding-bottom:var(--s9);text-align:center}
+.hero h1{margin-bottom:var(--s5)}
+.hero .lead{max-width:560px;margin:0 auto}
+
+/* ============================================================
+   7. WORD ENTRY  ★ 看板コンポーネント
+   語彙 / IPA / 品詞 / 意味(JP+EN) / 例文×2 / 語源
+   Anki: Word / IPA / POS / Meaning_JP / Meaning_EN / Example
+   ============================================================ */
+.entry{border-top:1px solid var(--line);padding:var(--s6) 0}
+.entry:last-child{border-bottom:1px solid var(--line)}
+.entry .head{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
+.entry .word{font-family:var(--font-en);font-size:clamp(24px,3.4vw,32px);font-weight:600;letter-spacing:-.01em}
+.entry .ipa{font-family:var(--font-ipa);font-weight:600;font-size:17px;color:var(--ink-2)}
+.entry .pos{font-family:var(--font-en);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--ink-3);border:1px solid var(--line);border-radius:99px;padding:2px 9px}
+.entry .mean{font-size:19px;font-weight:600;margin:var(--s3) 0 var(--s2)}
+.entry .mean-en{font-family:var(--font-en);color:var(--ink-2);font-size:15px;margin-bottom:var(--s4)}
+.entry .ex{margin:var(--s2) 0;padding-left:var(--s4);border-left:2px solid var(--line)}
+.entry .ex .en{font-size:16px}
+.entry .ex .jp{font-size:14px;color:var(--ink-2)}
+.entry .origin{margin-top:var(--s4);background:var(--bg-alt);border-radius:var(--r-md);
+  padding:var(--s4) var(--s5);font-size:14.5px;color:var(--ink-2);line-height:1.65}
+.entry .origin .l{display:block;font-family:var(--font-en);font-size:11px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--em);margin-bottom:var(--s2)}
+
+/* ============================================================
+   8. WORD REVIEW / KEY VOCABULARY  ★ 折りたたみ式・アクティブリコール（語彙はこれで統一）
+   ガイドライン:
+   - 1項目 = <details class="ri">。summary に 英単語(.word) + "タップで意味"(.hint) + chevron。
+   - ri-body の順序は IPA(.ipa) → 意味(.mean, 日本語) → 例文(.ex .en/.jp)。意味は開くまで隠す＝アクティブリコール。
+   - IPA は既定で必ず付ける。Dallas系は GA、その他は RP。発音記号は --font-ipa(セリフ)。
+   - リスト上部に「すべて開く/閉じる」(#openAll/#closeAll)。印刷時は自動で全開（末尾スクリプト）。
+   - 用語+短い定義だけの軽い語彙集なら ri-body は .mean のみでも可（IPA/例文は任意）。
+   - 同一ページに複数リストを置くなら、開閉ボタンはリスト単位で対象を絞る。
+   - 英語のみの資料での文言: "タップで意味"→"Tap to reveal" / "すべて開く・すべて閉じる"→"Expand all / Collapse all"。
+   ============================================================ */
+.review-ctrl{display:flex;gap:var(--s2);margin:var(--s6) 0 var(--s4)}
+.review{display:flex;flex-direction:column;gap:var(--s3)}
+.ri{border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg);overflow:hidden}
+.ri summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:var(--s3);padding:var(--s4) var(--s5)}
+.ri summary::-webkit-details-marker{display:none}
+.ri summary:hover{background:var(--bg-alt)}
+.ri summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ri .word{font-family:var(--font-en);font-size:19px;font-weight:600;color:var(--em)}
+.ri-body .ipa{font-family:var(--font-ipa);font-weight:600;font-size:16px;color:var(--ink-2);margin:0 0 var(--s2)}
+.ri .hint{margin-left:auto;font-size:12px;color:var(--ink-3)}
+.ri .chev{width:18px;height:18px;flex:none;color:var(--ink-3);transition:transform .25s;margin-left:var(--s2)}
+.ri[open] .chev{transform:rotate(180deg)}
+.ri[open] .hint{display:none}
+.ri-body{padding:0 var(--s5) var(--s4);animation:ri-in .28s ease}
+.ri-body .mean{font-size:17px;font-weight:600;margin:0 0 var(--s2)}
+.ri-body .ex{font-size:14px;color:var(--ink-2);margin:0}
+.ri-body .ex .jp{display:block;color:var(--ink-3)}
+@keyframes ri-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   9. LABELED CARDS (番号バッジ + ラベル + テキスト)  ※image3スタイル
+   ============================================================ */
+.icards{display:grid;gap:var(--s4);margin-top:var(--s7)}
+@media(min-width:560px){.icards.cols-2{grid-template-columns:1fr 1fr}}
+@media(min-width:760px){.icards.cols-3{grid-template-columns:repeat(3,1fr)}}
+.icard{background:var(--bg-alt);border-radius:var(--r-md);padding:var(--s5)}
+.icard .label{font-family:var(--font-en);font-size:12px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:var(--s4)}
+.icard .body{display:flex;align-items:flex-start;gap:var(--s4)}
+.icard .badge{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+  background:var(--accent-grad);color:#fff;font-family:var(--font-en);font-weight:700;font-size:20px}
+.icard .t{font-weight:600;font-size:16px;line-height:1.45;margin:0}
+
+/* ============================================================
+   10. CALLOUT / NOTE
+   ============================================================ */
+.note{background:var(--bg-alt);border-radius:var(--r-md);padding:var(--s5) var(--s6);margin:var(--s5) 0}
+.note .l{font-family:var(--font-en);font-size:12px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--em);display:block;margin-bottom:var(--s2)}
+.note p{margin:0;font-size:15.5px;color:var(--ink-2)}
+
+/* ============================================================
+   11. TABLE  ★ モバイル対応: 横長になりうる表は必ず <div class="table-wrap"> で囲む
+   ガイドライン:
+   - 狭い画面でははみ出さず横スクロール。両端の薄い影で「続きがある」ことを示唆。
+   - 列が多い/値が長い表は table-wrap 必須。3列以内で短い値なら省略可。
+   - 1列目は自動で太字（見出し列）。数値列は class="mono" でそろえると読みやすい。
+   ============================================================ */
+.table-wrap{
+  overflow-x:auto;-webkit-overflow-scrolling:touch;margin:var(--s5) 0;scrollbar-width:thin;
+  background:
+    linear-gradient(90deg,var(--bg),transparent) 0 0,
+    linear-gradient(90deg,transparent,var(--bg)) 100% 0,
+    radial-gradient(farthest-side at 0 50%,rgba(0,0,0,.10),transparent) 0 0,
+    radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.10),transparent) 100% 0;
+  background-repeat:no-repeat;background-size:32px 100%,32px 100%,12px 100%,12px 100%;
+  background-attachment:local,local,scroll,scroll;
+}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:var(--s5) 0}
+.table-wrap table{margin:0;min-width:520px}      /* wrap内はmargin0・この幅未満で横スクロール */
+th,td{text-align:left;padding:var(--s3) var(--s4);border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--font-en);font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-3)}
+td:first-child{font-weight:600}
+
+/* ============================================================
+   11b. REFERENCE LINKS  ★ 参考リンクは3型に統一
+   ① .reflink 外部リンク(末尾↗・別タブ)。外部リンクは必ずこれ + target="_blank" rel="noopener"。
+      内部アンカー(TOC・引用ジャンプ)には付けない。
+   ② .cite    本文中の引用 [n]。<sup class="cite"><a href="#ref-n">n</a></sup> で #ref-n へジャンプ。
+   ③ .refs    末尾の References リスト。番号バッジ + タイトル + メタ(・区切り) + reflink。
+   使い分け: 主要文献=ヒーローに .reflink + References登録 / 補足主張=[n] / 軽い言及=インライン .reflink のみ。
+   ============================================================ */
+.reflink{color:var(--accent);font-weight:500;text-decoration:none}
+.reflink::after{content:"\2197";font-size:.85em;margin-left:3px;display:inline-block}
+.reflink:hover{text-decoration:underline}
+.cite{font-size:.72em;font-weight:600;vertical-align:super;line-height:0}
+.cite a{color:var(--accent);text-decoration:none}
+.cite a::before{content:"["}.cite a::after{content:"]"}
+.cite a:hover{text-decoration:underline}
+.refs .ref-list{list-style:none;counter-reset:r;padding:0;margin:var(--s4) 0 0}
+.refs .ref-list li{counter-increment:r;position:relative;padding:var(--s4) 0 var(--s4) 46px;border-top:1px solid var(--line)}
+.refs .ref-list li::before{content:counter(r);position:absolute;left:0;top:var(--s4);width:28px;height:28px;border-radius:8px;
+  display:grid;place-items:center;background:var(--accent-grad);color:#fff;font-family:var(--font-en);font-weight:700;font-size:13px}
+.ref-title{display:block;font-weight:600;color:var(--ink);line-height:1.4}
+.ref-meta{display:block;font-family:var(--font-en);font-size:13px;color:var(--ink-2);margin:3px 0 6px}
+.refs .ref-list li:target{background:var(--bg-alt);border-radius:8px;box-shadow:0 0 0 6px var(--bg-alt)}
+
+/* ============================================================
+   11c. CHART / SVG TEXT  ★ チャート・図の文字は「サンス＋等幅数字」で固定
+   JSで font-family を属性指定しても効かない環境があるため、CSSで確実に上書きする。
+   チャートのテキストは数字が多いので font-variant-numeric:tabular-nums で桁をそろえる。
+   ============================================================ */
+.chart svg text,figure svg text{font-family:var(--font-chart);font-variant-numeric:tabular-nums}
+
+/* ============================================================
+   12. STAT
+   ============================================================ */
+.stats{display:flex;flex-wrap:wrap;gap:var(--s7);margin-top:var(--s6)}
+.stat .v{font-family:var(--font-en);font-size:clamp(40px,6vw,56px);font-weight:700;letter-spacing:-.02em;line-height:1}
+.stat .k{font-size:14px;color:var(--ink-2);margin-top:var(--s2)}
+
+/* ============================================================
+   13. BUTTONS
+   ============================================================ */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-en);font-size:15px;font-weight:500;
+  padding:11px 22px;border-radius:99px;transition:.2s;cursor:pointer;border:1px solid transparent;text-decoration:none}
+.btn-sm{font-size:13px;padding:7px 15px}
+/* primary = グラデ・ピル(ブランドの主役。1画面に1つが理想) */
+.btn-primary{background:var(--accent-grad);background-size:140% 140%;background-position:0% 50%;color:#fff}
+.btn-primary:hover{background-position:100% 50%;text-decoration:none}
+/* soft = 薄紫の副ボタン(同系色だが控えめ。primaryと階層差をつける) */
+.btn-soft{background:#f1ecff;color:var(--em)}
+.btn-soft:hover{background:#e7deff;text-decoration:none}
+/* ghost = 無彩色の枠線。復習の開閉など機能ボタン用 */
+.btn-ghost{color:var(--ink-2);border-color:var(--line);background:var(--bg)}
+.btn-ghost:hover{background:var(--bg-alt);text-decoration:none}
+/* text = 紫テキスト+矢印(文中リンク) */
+.btn-text{padding:6px 0;border:0;background:none;color:var(--em);font-weight:500}
+.btn-text:hover{text-decoration:underline}
+.btn-text .ar{transition:transform .2s}
+.btn-text:hover .ar{transform:translateX(3px)}
+
+/* ============================================================
+   14. FOOTER
+   ============================================================ */
+footer{padding:var(--s7) 0;border-top:1px solid var(--line);text-align:center}
+footer p{font-size:13px;color:var(--ink-3);margin:0}
+
+/* ============================================================
+   14b. FOCUS (キーボード操作の可視化・アクセシビリティ)
+   ============================================================ */
+a:focus-visible,summary:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* ============================================================
+   15. MOTION (控えめなスクロール出現 / reduce対応)
+   ============================================================ */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+/* ============================================================
+   16. PRINT (PDF化用。印刷時は復習リストを自動で全開)
+   ============================================================ */
+@media print{
+  .topbar{position:static;backdrop-filter:none}
+  section{padding:var(--s6) 0}
+  .reveal{opacity:1;transform:none}
+  .review-ctrl{display:none}
+  a{color:var(--ink)}
+  /* グラデ見出しは印刷で薄く飛ぶため単色にフォールバック */
+  .grad{-webkit-text-fill-color:var(--em);color:var(--em)}
+  /* 外部リンクは紙でも辿れるよう URL を併記 */
+  .reflink::after{content:" (" attr(href) ")";font-size:.8em}
+  .ri{break-inside:avoid}
+}
+
+/* ============================================================
+   17. DARK THEME (OSの設定に自動追従。両テーマで可読)
+   トークンを差し替えるだけ。暗所では文字を明るく、グラデも明るめに。
+   ============================================================ */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0b0b0d; --bg-alt:#19191c; --ink:#f5f5f7; --ink-2:#a1a1a6; --ink-3:#8a8a8f; --line:#2c2c30;
+    --grad-1:#7d7bff; --grad-2:#ff74ea;
+    --accent-grad:linear-gradient(105deg, #7d7bff 0%, #b06bff 42%, #ff74ea 100%);
+    --em:#bca4ff; --accent:#bca4ff; --accent-bg:#7d7bff;
+  }
+  .topbar{background:rgba(11,11,13,.8)}
+  .btn-soft{background:#241f3a;color:var(--em)}
+  .btn-soft:hover{background:#2e2747}
+  ::selection{background:#7d7bff33}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+  <div class="row">
+    <span class="brand">English Study Docs</span>
+    <nav>
+      <a href="#vocab">Vocabulary</a>
+      <a href="#review">Review</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================
+  TEXT LANGUAGE / 文言の言語
+  コンポーネントは言語非依存。文言は「出力ドキュメントの言語」に合わせて統一する。
+  バイリンガル資料: 日本語リードの直下に英語補足を <p class="en-sub"> で添える（このテンプレが見本）。
+  英語のみの資料: 見出し・本文・例文・注釈をすべて英語にし、UI文字列は下記の英語版を使う。
+    すべて開く / すべて閉じる → Expand all / Collapse all
+    タップで意味              → Tap to reveal
+    Word Review · 復習(kicker) → Word Review
+    語彙の見出し              → Key Vocabulary
+  ============================================================ -->
+<!-- ===== HERO ===== -->
+<section class="hero wrap">
+  <div class="reveal">
+    <p class="kicker">Design System · 共通ベース</p>
+    <h1 class="grad">共通HTMLテンプレート</h1>
+    <p class="lead">ドキュメント作成の共通ベースです。<span class="em">デザイントークン</span>と<span class="em">再利用コンポーネント</span>を定義しており、必要なブロックを複製して使います。ライト/ダーク表示に自動対応。</p>
+    <p class="en-sub">A shared base for building documents: design tokens plus reusable components to copy as needed. Light and dark aware.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ===== SECTION: WORD ENTRY ===== -->
+<section id="vocab" class="wrap">
+  <div class="reveal">
+    <h2 class="grad">看板コンポーネント：<br>単語エントリー</h2>
+    <p class="lead" style="margin-bottom:var(--s7)">Anki のカード構造（Word / IPA / POS / 意味 / 例文）とそのまま対応。発音記号はデフォルトで表示します。<br><span class="en-sub" style="display:inline-block;margin-top:8px">Maps directly to your Anki card structure (Word / IPA / POS / Meaning / Examples). IPA is shown by default.</span></p>
+  </div>
+
+  <!-- entry: 複製して使う -->
+  <div class="entry reveal">
+    <div class="head">
+      <span class="word grad">ballpark figure</span>
+      <span class="ipa">/ˈbɔlˌpɑrk ˈfɪɡjɚ/</span>
+      <span class="pos">noun</span>
+    </div>
+    <p class="mean">おおよその概算、ざっくりした見積もり</p>
+    <p class="mean-en en">a rough estimate that is close enough to be useful</p>
+    <div class="ex">
+      <p class="en" style="margin:0">Can you give me a ballpark figure for how long the migration will take?</p>
+      <p class="jp" style="margin:0">移行にどれくらいかかるか、ざっくりした目安をもらえますか？</p>
+    </div>
+    <div class="ex">
+      <p class="en" style="margin:0">It's just a ballpark figure, so don't hold me to it.</p>
+      <p class="jp" style="margin:0">あくまで概算なので、確定だと思わないでください。</p>
+    </div>
+    <div class="origin">
+      <span class="l">Origin</span>
+      野球場（ballpark）の広い敷地内に収まっていれば「だいたい合っている」という発想から。within the ballpark で「おおよその範囲内」を表します。
+    </div>
+  </div>
+
+  <div class="entry reveal">
+    <div class="head">
+      <span class="word grad">circle back</span>
+      <span class="ipa">/ˈsɝkəl ˈbæk/</span>
+      <span class="pos">verb</span>
+    </div>
+    <p class="mean">（後で）改めて連絡する、また話を戻す</p>
+    <p class="mean-en en">to return to a topic or person at a later time</p>
+    <div class="ex">
+      <p class="en" style="margin:0">Let's circle back on the budget once we hear from the Dallas team.</p>
+      <p class="jp" style="margin:0">ダラスチームから連絡が来たら、予算の件にまた戻りましょう。</p>
+    </div>
+    <div class="ex">
+      <p class="en" style="margin:0">I'll circle back with you after the demo.</p>
+      <p class="jp" style="margin:0">デモのあとで改めてご連絡します。</p>
+    </div>
+    <div class="origin">
+      <span class="l">Origin</span>
+      一周して（circle）元の地点に戻る（back）動きのイメージから、「後でその話題に戻る」という比喩に発展した表現です。
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION: WORD REVIEW (折りたたみ式・アクティブリコール) ===== -->
+<section id="review" class="alt">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="kicker">Word Review · 復習</p>
+      <h2 class="grad">出てきた単語を、<br>クリックで復習。</h2>
+      <p class="lead">英単語をクリック（タップ）すると日本語の意味が出ます。意味を隠したまま思い出す——アクティブ・リコール用のリストです。</p>
+      <p class="en-sub">Tap a word to reveal its meaning — an active-recall list that keeps meanings hidden until you recall them.</p>
+
+      <div class="review-ctrl">
+        <button class="btn btn-ghost btn-sm" id="openAll">すべて開く</button>
+        <button class="btn btn-ghost btn-sm" id="closeAll">すべて閉じる</button>
+      </div>
+    </div>
+
+    <div class="review reveal">
+      <!-- review item: 複製して使う。IPAは開いたとき本文側に表示 -->
+      <details class="ri">
+        <summary>
+          <span class="word en">touch base</span>
+          <span class="hint">タップで意味</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="ri-body">
+          <p class="ipa">/tʌtʃ beɪs/</p>
+          <p class="mean">（短く）連絡を取る、状況を確認し合う</p>
+          <p class="ex en">Let's touch base on Monday before the meeting.<span class="jp">月曜の会議前に一度すり合わせましょう。</span></p>
+        </div>
+      </details>
+
+      <details class="ri">
+        <summary>
+          <span class="word en">loop someone in</span>
+          <span class="hint">タップで意味</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="ri-body">
+          <p class="ipa">/lup ˈsʌmwʌn ɪn/</p>
+          <p class="mean">（情報共有の輪に）〜を加える、〜にも共有する</p>
+          <p class="ex en">Please loop me in on that email thread.<span class="jp">そのメールのやり取りに私も入れてください。</span></p>
+        </div>
+      </details>
+
+      <details class="ri">
+        <summary>
+          <span class="word en">ramp up</span>
+          <span class="hint">タップで意味</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="ri-body">
+          <p class="ipa">/ræmp ʌp/</p>
+          <p class="mean">（活動・生産などを）増強する、本格化させる</p>
+          <p class="ex en">We're ramping up support ahead of the launch.<span class="jp">ローンチに向けてサポート体制を強化しています。</span></p>
+        </div>
+      </details>
+
+      <details class="ri">
+        <summary>
+          <span class="word en">on the same page</span>
+          <span class="hint">タップで意味</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="ri-body">
+          <p class="ipa">/ɑn ðə seɪm peɪdʒ/</p>
+          <p class="mean">認識・理解が一致している</p>
+          <p class="ex en">Let's make sure we're on the same page about the deadline.<span class="jp">締め切りについて認識を合わせておきましょう。</span></p>
+        </div>
+      </details>
+
+      <details class="ri">
+        <summary>
+          <span class="word en">give the green light</span>
+          <span class="hint">タップで意味</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </summary>
+        <div class="ri-body">
+          <p class="ipa">/ɡɪv ðə ɡrin laɪt/</p>
+          <p class="mean">（正式に）承認する、ゴーサインを出す</p>
+          <p class="ex en">Management gave the green light to the new tool.<span class="jp">経営陣が新しいツールにゴーサインを出した。</span></p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION: COMPONENTS SHOWCASE ===== -->
+<section id="components" class="wrap">
+  <div class="reveal">
+    <p class="kicker">Components</p>
+    <h2 class="grad">共通パーツ一覧</h2>
+    <p class="lead" style="margin-bottom:var(--s7)">どの資料でも使い回せる基本ブロック。必要なものだけ複製してください。<br><span class="en-sub" style="display:inline-block;margin-top:8px">Reusable building blocks for any document — duplicate only the ones you need.</span></p>
+  </div>
+
+  <div class="icards cols-3 reveal">
+    <div class="icard">
+      <div class="label">Memorization</div>
+      <div class="body"><div class="badge">1</div><p class="t">暗記時に例文と意味が見えない配置</p></div>
+    </div>
+    <div class="icard">
+      <div class="label">Phonetics</div>
+      <div class="body"><div class="badge">2</div><p class="t">音の変化・脱落を考慮した発音記号</p></div>
+    </div>
+    <div class="icard">
+      <div class="label">Word Origin</div>
+      <div class="body"><div class="badge">3</div><p class="t">語源や由来を解説して定着させる</p></div>
+    </div>
+  </div>
+
+  <div class="note reveal">
+    <span class="l">Note</span>
+    <p>補足・注意・ポイントはこのブロックに。地色のグレーで本文と区別しつつ、主張しすぎない。</p>
+  </div>
+
+  <div class="reveal">
+    <h3 style="margin-top:var(--s7)">テーブル</h3>
+    <p style="font-size:13px;color:var(--ink-3);margin:-4px 0 var(--s3)">横長になりうる表は必ず <span class="mono">&lt;div class="table-wrap"&gt;</span> で囲む（iPhone等で横スクロール）。</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>トークン</th><th>値</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">--grad-1 / 2</td><td class="mono">#3730d6 → #e640fb</td><td>見出しグラデ(D)</td></tr>
+        <tr><td class="mono">--em</td><td class="mono">#8b3ff0</td><td>本文中の語句強調</td></tr>
+        <tr><td class="mono">--accent</td><td class="mono">#7c3aed</td><td>リンク・主ボタン</td></tr>
+        <tr><td class="mono">--bg-alt</td><td class="mono">#f5f5f7</td><td>セクション地・カード</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="stats reveal">
+    <div class="stat"><div class="v grad">3</div><div class="k">守るべき規律</div></div>
+    <div class="stat"><div class="v grad">1</div><div class="k">アクセント系統</div></div>
+    <div class="stat"><div class="v grad">8pt</div><div class="k">間隔グリッド</div></div>
+  </div>
+
+  <div class="reveal" style="margin-top:var(--s7);display:flex;gap:var(--s4);flex-wrap:wrap;align-items:center">
+    <a class="btn btn-primary" href="#">主ボタン</a>
+    <a class="btn btn-soft" href="#">副ボタン</a>
+    <a class="btn-text" href="#">テキストリンク <span class="ar">›</span></a>
+  </div>
+</section>
+
+<!-- ===== SECTION: REFERENCES & LINKS ===== -->
+<section class="wrap">
+  <div class="reveal">
+    <p class="kicker">References &amp; Links</p>
+    <h2 class="grad">参考リンクは3型で統一</h2>
+    <p class="lead" style="margin-bottom:var(--s6)">外部は <span class="mono">.reflink</span>（↗・別タブ）、本文引用は <span class="mono">[n]</span>、末尾に References リスト。<br><span class="en-sub" style="display:inline-block;margin-top:8px">External links use <span class="mono">.reflink</span> (↗, new tab); in-text citations use <span class="mono">[n]</span>; sources are listed at the end.</span></p>
+    <p>外部リンクは末尾に <span class="mono">↗</span> が付き、別タブで開きます（<a class="reflink" href="https://example.com" target="_blank" rel="noopener">外部リンクの例</a>）。特定の主張には番号で出典を付け<sup class="cite"><a href="#ref-1">1</a></sup>、タップすると下の該当項目へジャンプします。</p>
+    <div class="refs">
+      <ol class="ref-list">
+        <li id="ref-1">
+          <span class="ref-title">参考文献のタイトル（サンプル）</span>
+          <span class="ref-meta">著者名 · 媒体・会議名 · 発行年</span>
+          <a class="reflink" href="https://example.com" target="_blank" rel="noopener">リンク</a>
+        </li>
+        <li id="ref-2">
+          <span class="ref-title">もう一件の参考文献（サンプル）</span>
+          <span class="ref-meta">著者名 · 媒体・会議名 · 発行年</span>
+          <a class="reflink" href="https://example.com" target="_blank" rel="noopener">リンク</a>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="wrap">
+  <p>共通ベーステンプレート · English Study Docs</p>
+</footer>
+
+<script>
+/* (a) スクロール出現 .reveal → .in */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+    document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')});
+    return;
+  }
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});
+  },{rootMargin:'0px 0px -8% 0px',threshold:.08});
+  document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el)});
+})();
+
+/* (b) 復習リスト すべて開く / 閉じる */
+(function(){
+  var items=document.querySelectorAll('#review details');
+  var o=document.getElementById('openAll'), c=document.getElementById('closeAll');
+  if(o)o.onclick=function(){items.forEach(function(d){d.open=true})};
+  if(c)c.onclick=function(){items.forEach(function(d){d.open=false})};
+})();
+
+/* (c) 印刷時はすべて開いてからPDF化 */
+window.addEventListener('beforeprint',function(){
+  document.querySelectorAll('details').forEach(function(d){d.open=true});
+});
+</script>
+</body>
+</html>
